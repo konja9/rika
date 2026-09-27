@@ -94,37 +94,31 @@ function drawSpinUntilHit(mode: Mode) {
 }
 
 describe('保留の色', () => {
-  it('難度点＋速さ点で決まる', () => {
-    // ★1：基準20秒
-    expect(holdColor(1, 30, false)).toBe('white'); // 0+0
-    expect(holdColor(1, 15, false)).toBe('blue'); // 0+1
-    expect(holdColor(1, 10, false)).toBe('green'); // 0+2
-    // ★2：基準30秒
-    expect(holdColor(2, 31, false)).toBe('blue'); // 1+0
-    expect(holdColor(2, 30, false)).toBe('green'); // 1+1
-    expect(holdColor(2, 15, false)).toBe('red'); // 1+2
-    // ★3：基準45秒
-    expect(holdColor(3, 60, false)).toBe('green'); // 2+0
-    expect(holdColor(3, 40, false)).toBe('red'); // 2+1
-    expect(holdColor(3, 22, false)).toBe('gold'); // 2+2
-  });
+  // 設定（src/config.ts）の基準時間から、境目の前後の秒数を計算して確かめる
+  for (const d of [1, 2, 3] as const) {
+    for (const numeric of [false, true]) {
+      it(`★${d}${numeric ? '・数値入力' : ''}：難度点＋速さ点で決まる`, () => {
+        const base = CONFIG.baseTimeSec[d] * (numeric ? CONFIG.numericTimeFactor : 1);
+        const fast = base * CONFIG.fastRatio;
+        const color = (points: number) => HOLD_COLORS[Math.min(points, HOLD_COLORS.length - 1)];
+        const dp = CONFIG.difficultyPoints[d];
+        expect(holdColor(d, fast * 0.99, numeric)).toBe(color(dp + 2)); // 基準の半分以内
+        expect(holdColor(d, fast * 1.01, numeric)).toBe(color(dp + 1)); // 基準以内
+        expect(holdColor(d, base, numeric)).toBe(color(dp + 1));
+        expect(holdColor(d, base * 1.01, numeric)).toBe(color(dp)); // 基準より遅い
+      });
+    }
+  }
 
   it('色メーターは判定と同じ色を示す', () => {
     for (const d of [1, 2, 3] as const) {
-      for (let t = 0; t < 80; t += 0.5) {
+      for (let t = 0; t < 120; t += 0.5) {
         for (const numeric of [false, true]) {
           expect(holdColorMeter(d, t, numeric).color).toBe(holdColor(d, t, numeric));
         }
       }
     }
     expect(holdColorMeter(1, 0, false).ratio).toBe(1);
-    expect(holdColorMeter(1, 99, false).ratio).toBeNull();
-  });
-
-  it('数値入力では基準時間が1.5倍', () => {
-    // ★3・数値入力：基準67.5秒、半分は33.75秒
-    expect(holdColor(3, 60, true)).toBe('red');
-    expect(holdColor(3, 33, true)).toBe('gold');
-    expect(holdColor(3, 70, true)).toBe('green');
+    expect(holdColorMeter(1, 9999, false).ratio).toBeNull();
   });
 });

@@ -1,0 +1,25 @@
+# main 以外のブランチやプルリクエストでも、テスト・型チェック・ビルドが通るかを確かめる。
+name: テスト
+
+on:
+  push:
+    branches-ignore: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: テスト
+        run: npm test
+      - name: 型チェックとビルド
+        run: npm run build

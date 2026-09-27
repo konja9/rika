@@ -36,9 +36,10 @@ describe('出題の重み', () => {
       }
       return n / 4000;
     };
-    // parallel2 だけが「逆数の取り忘れ」に関係する → 1:2 になり約67%
+    // ★1の合成抵抗は2パターン。parallel2 だけが「逆数の取り忘れ」に関係する
+    const f = Math.min(CONFIG.weakness.maxFactor, 1 + CONFIG.weakness.perMistake * 10);
     expect(count({})).toBeCloseTo(0.5, 1);
-    expect(count({ parallelNoReciprocal: 10 })).toBeCloseTo(2 / 3, 1);
+    expect(count({ parallelNoReciprocal: 10 })).toBeCloseTo(f / (f + 1), 1);
   });
 });
 

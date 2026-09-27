@@ -61,12 +61,13 @@ describe('確変', () => {
     expect(s.holds[0].mode).toBe('kakuhen');
   });
 
-  it('確変中は難度が1つ上がる（上限★3）', () => {
+  it('確変中は難度が上がる（上限★3）', () => {
     const s = newGameState();
     expect(currentDifficulty(s, 1)).toBe(1);
     applySpin(s, fakeHit(true, 'normal'));
-    expect(currentDifficulty(s, 1)).toBe(2);
-    expect(currentDifficulty(s, 2)).toBe(3);
+    const up = CONFIG.kakuhenDifficultyUp;
+    expect(currentDifficulty(s, 1)).toBe(Math.min(3, 1 + up));
+    expect(currentDifficulty(s, 2)).toBe(Math.min(3, 2 + up));
     expect(currentDifficulty(s, 3)).toBe(3);
   });
 

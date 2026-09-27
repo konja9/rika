@@ -1,0 +1,47 @@
+# main ブランチに変更が入ったら、テストとビルドをして GitHub Pages に公開する。
+# 最初の1回だけ、GitHub の Settings → Pages → Source を「GitHub Actions」にしておくこと。
+name: GitHub Pages に公開
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # Actions の画面から手動でも実行できる
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: テスト
+        run: npm test
+      - name: ビルド
+        run: npm run build
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: 公開
+        id: deployment
+        uses: actions/deploy-pages@v5
