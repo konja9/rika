@@ -38,8 +38,8 @@ export const CONFIG = {
    * 合計点 0=白 1=青 2=緑 3=赤 4=金
    */
   hitRate: {
-    normal: { white: 0.06, blue: 0.1, green: 0.15, red: 0.25, gold: 0.4 },
-    kakuhen: { white: 0.15, blue: 0.22, green: 0.3, red: 0.45, gold: 0.65 },
+    normal: { white: 0.15, blue: 0.22, green: 0.3, red: 0.45, gold: 0.65 },
+    kakuhen: { white: 0.3, blue: 0.4, green: 0.5, red: 0.65, gold: 0.85 },
   } as Record<'normal' | 'kakuhen', Record<HoldColor, number>>,
 
   /** 大当たりの出玉 */
