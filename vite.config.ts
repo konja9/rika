@@ -41,5 +41,7 @@ export default defineConfig({
   test: {
     include: ['tests/**/*.test.ts'],
     environment: 'node',
+    // 大量のシミュレーションをするので、遅いマシンでも止まらないように長めにしておく
+    testTimeout: 30000,
   },
 });

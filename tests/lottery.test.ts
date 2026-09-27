@@ -64,22 +64,20 @@ describe('確変率・リーチ・図柄・出玉', () => {
   });
 
   it('図柄：当たりは3つそろい（奇数=確変、偶数=通常）、ハズレはそろわない', () => {
-    for (const r of results) {
+    // 20万回分を1つずつ expect すると遅いので、ルールに合わない結果を数えてから1回だけ確かめる
+    const bad = results.filter((r) => {
       const [a, b, c] = r.reels;
-      if (r.hit) {
-        expect(a === b && b === c).toBe(true);
-        expect(a % 2 === 1).toBe(r.kakuhen);
-      } else {
-        expect(a === b && b === c).toBe(false);
-        // リーチのときだけ左右がそろう
-        expect(a === c).toBe(r.reach !== 'none');
-      }
-      for (const x of r.reels) expect(x >= 1 && x <= 9).toBe(true);
-    }
+      const inRange = r.reels.every((x) => Number.isInteger(x) && x >= 1 && x <= 9);
+      if (!inRange) return true;
+      if (r.hit) return !(a === b && b === c) || (a % 2 === 1) !== r.kakuhen;
+      // ハズレ：3つはそろわない。リーチのときだけ左右がそろう
+      return (a === b && b === c) || (a === c) !== (r.reach !== 'none');
+    });
+    expect(bad).toEqual([]);
   });
 
   it('出玉：当たりのときだけ、獲得時の状態に応じた数', () => {
-    for (const r of results) expect(r.payout).toBe(r.hit ? CONFIG.payout.kakuhen : 0);
+    expect(results.filter((r) => r.payout !== (r.hit ? CONFIG.payout.kakuhen : 0))).toEqual([]);
     const normal = drawSpinUntilHit('normal');
     expect(normal.payout).toBe(CONFIG.payout.normal);
   });
