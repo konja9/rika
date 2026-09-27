@@ -41,6 +41,23 @@ export function holdColor(difficulty: Difficulty, elapsedSec: number, numeric: b
   return HOLD_COLORS[Math.min(points, HOLD_COLORS.length - 1)];
 }
 
+/**
+ * 色メーター用：いま答えたときの色と、次に色が下がるまでの残りの割合（1→0）。
+ * これ以上下がらないときは ratio が null。
+ */
+export function holdColorMeter(
+  difficulty: Difficulty,
+  elapsedSec: number,
+  numeric: boolean,
+): { color: HoldColor; ratio: number | null } {
+  const base = CONFIG.baseTimeSec[difficulty] * (numeric ? CONFIG.numericTimeFactor : 1);
+  const fast = base * CONFIG.fastRatio;
+  const color = holdColor(difficulty, elapsedSec, numeric);
+  if (elapsedSec <= fast) return { color, ratio: (fast - elapsedSec) / fast };
+  if (elapsedSec <= base) return { color, ratio: (base - elapsedSec) / (base - fast) };
+  return { color, ratio: null };
+}
+
 /** その保留の当選確率 */
 export function hitRateOf(hold: Hold): number {
   return CONFIG.hitRate[hold.mode][hold.color];

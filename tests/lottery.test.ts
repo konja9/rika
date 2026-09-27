@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { CONFIG, HOLD_COLORS } from '../src/config';
 import { createRng } from '../src/core/random';
-import { drawSpin, holdColor, type Mode } from '../src/game/lottery';
+import { drawSpin, holdColor, holdColorMeter, type Mode } from '../src/game/lottery';
 
 /** 回数 n・確率 p のとき、ずれの許容幅（標準偏差の5倍） */
 function tolerance(p: number, n: number): number {
@@ -107,6 +107,18 @@ describe('保留の色', () => {
     expect(holdColor(3, 60, false)).toBe('green'); // 2+0
     expect(holdColor(3, 40, false)).toBe('red'); // 2+1
     expect(holdColor(3, 22, false)).toBe('gold'); // 2+2
+  });
+
+  it('色メーターは判定と同じ色を示す', () => {
+    for (const d of [1, 2, 3] as const) {
+      for (let t = 0; t < 80; t += 0.5) {
+        for (const numeric of [false, true]) {
+          expect(holdColorMeter(d, t, numeric).color).toBe(holdColor(d, t, numeric));
+        }
+      }
+    }
+    expect(holdColorMeter(1, 0, false).ratio).toBe(1);
+    expect(holdColorMeter(1, 99, false).ratio).toBeNull();
   });
 
   it('数値入力では基準時間が1.5倍', () => {

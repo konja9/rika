@@ -128,7 +128,7 @@ h1, h2, h3 { margin: 0; line-height: 1.25; }
 .menu-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
 /* ---------- プレイ画面 ---------- */
-.play { padding-top: 8px; gap: 10px; }
+.play { padding-top: 8px; gap: 8px; }
 .topbar { display: flex; align-items: center; gap: 8px; }
 .topbar .balls { margin-left: auto; font-weight: 700; }
 .topbar .balls b { color: var(--warn); font-size: 1.2rem; }
@@ -149,11 +149,10 @@ h1, h2, h3 { margin: 0; line-height: 1.25; }
 }
 .reel {
   width: 30%;
-  aspect-ratio: 3 / 4;
-  max-height: 120px;
+  height: 86px;
   display: grid;
   place-items: center;
-  font-size: 3.4rem;
+  font-size: 3rem;
   font-weight: 900;
   font-variant-numeric: tabular-nums;
   background: linear-gradient(180deg, #fdfdfd, #d9dde8);
@@ -317,3 +316,115 @@ h1, h2, h3 { margin: 0; line-height: 1.25; }
 .stat-row:last-child { border-bottom: none; }
 .bar { height: 10px; background: var(--panel2); border-radius: 999px; overflow: hidden; margin-top: 4px; }
 .bar > span { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+
+/* ---------- 保留の色メーター ---------- */
+.meter { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
+.meter-dot.hold { width: 14px; height: 14px; flex: none; }
+.meter-text { flex: none; }
+.meter-bar { flex: 1; height: 6px; background: var(--panel2); border-radius: 999px; overflow: hidden; }
+.meter-bar > span { display: block; height: 100%; border-radius: 999px; transition: width 0.1s linear; }
+.meter-bar > span.white { background: var(--hold-white); }
+.meter-bar > span.blue { background: var(--hold-blue); }
+.meter-bar > span.green { background: var(--hold-green); }
+.meter-bar > span.red { background: var(--hold-red); }
+.meter-bar > span.gold { background: var(--hold-gold); }
+
+/* ---------- 回路図 ---------- */
+.circuit-wrap { display: flex; justify-content: center; }
+.circuit { width: 100%; max-width: 360px; height: auto; max-height: 140px; }
+.circuit .wire { stroke: var(--text); stroke-width: 2; stroke-linecap: round; }
+.circuit .res { fill: var(--panel2); stroke: var(--accent); stroke-width: 2; }
+.circuit .res-name { fill: var(--muted); font-size: 11px; text-anchor: middle; }
+.circuit .res-val { fill: var(--text); font-size: 12.5px; font-weight: 700; text-anchor: middle; }
+.circuit .terminal { fill: var(--bg); stroke: var(--text); stroke-width: 2; }
+
+/* ---------- リーチ・当たりの演出 ---------- */
+.machine-msg.reach { color: #ffd166; font-size: 1.3rem; animation: pulse 0.35s ease-in-out infinite alternate; }
+.machine-msg.super {
+  font-size: 1.4rem;
+  background: linear-gradient(90deg, #ff5fa2, #fbbf24, #56c2ff, #ff5fa2);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: rainbow 1s linear infinite, pulse 0.3s ease-in-out infinite alternate;
+}
+.machine-msg.win { color: var(--warn); font-size: 1.3rem; text-shadow: 0 0 10px #ff9f1c; }
+.machine-msg.lose { color: var(--muted); }
+.machine.reach { border-color: #ffd166; box-shadow: 0 0 18px rgba(255, 209, 102, 0.55); }
+.machine.super { animation: super-flash 0.5s steps(2) infinite; }
+.machine.win { border-color: var(--warn); box-shadow: 0 0 26px rgba(251, 191, 36, 0.8); }
+@keyframes rainbow { to { background-position: 300% 0; } }
+@keyframes super-flash {
+  0% { border-color: #ff5fa2; box-shadow: 0 0 26px rgba(255, 95, 162, 0.8); }
+  100% { border-color: #56c2ff; box-shadow: 0 0 26px rgba(86, 194, 255, 0.8); }
+}
+
+/* ---------- 確変 ---------- */
+.machine.kakuhen {
+  background: radial-gradient(ellipse at top, #5a1f4a, #1c0f2b 70%);
+  border-color: #ff5fa2;
+}
+.kakuhen-status { color: #ff8cc0; font-weight: 800; }
+.kakuhen-tag { background: #4a1638 !important; border-color: #ff5fa2 !important; color: #ffc2dd; }
+.kakuhen-note { color: #ff8cc0; font-weight: 800; margin-top: 4px; }
+.toast.info { background: rgba(74, 22, 56, 0.96); border-color: #ff5fa2; }
+
+/* ---------- テンキー ---------- */
+.numpad { display: flex; flex-direction: column; gap: 8px; margin-top: auto; }
+.numpad.locked { opacity: 0.5; pointer-events: none; }
+.num-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 1.4rem;
+  font-weight: 800;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 6px 10px;
+  min-height: 52px;
+}
+.num-field {
+  min-width: 5.5em;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: var(--panel2);
+  border: 2px solid var(--line);
+  font-size: 1.4rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: pre;
+}
+.num-field.exp { min-width: 2.6em; font-size: 1rem; padding: 2px 6px; }
+.num-field.active { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(86, 194, 255, 0.35); }
+.num-display sup { align-self: flex-start; }
+.num-unit { color: var(--muted); font-size: 1.1rem; }
+.numpad-hint { font-size: 0.8rem; text-align: center; }
+.numpad-msg { min-height: 1.2em; color: var(--bad); text-align: center; font-size: 0.9rem; }
+.keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.key {
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 9px 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+.key:active { background: #2b376a; }
+.key.fn { color: var(--muted); }
+.key.wide { grid-column: span 2; }
+.key.submit {
+  grid-row: span 2;
+  background: linear-gradient(180deg, #ff5fa2, #d6336c);
+  border-color: #ff8cc0;
+  font-size: 1.05rem;
+}
+
+/* 正解の表示の中の小さな保留 */
+.hold.inline { display: inline-block; width: 14px; height: 14px; vertical-align: -2px; }
+.bighit .kakuhen-sub { font-size: 0.95rem; color: #ffc2dd; font-weight: 600; margin-top: 6px; text-shadow: none; }
+.bighit .normal-in { color: var(--muted); font-weight: 700; }
+.bighit.is-kakuhen h2 { color: #ff8cc0; text-shadow: 0 0 18px #ff5fa2, 0 0 4px #fff; }
