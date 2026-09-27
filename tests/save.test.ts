@@ -30,6 +30,17 @@ describe('保存と読み込み', () => {
     expect(loaded).toEqual(d);
   });
 
+  it('演出中だった抽選結果も保存・復元できる', () => {
+    const st = memoryStorage();
+    const d = defaultSave();
+    d.game.pending = {
+      hit: true, kakuhen: true, reach: 'super', reels: [7, 7, 7], payout: CONFIG.payout.normal,
+      hold: { color: 'gold', mode: 'normal' },
+    };
+    writeSave(d, st);
+    expect(loadSave(st).game.pending).toEqual(d.game.pending);
+  });
+
   it('何も保存されていなければ初期データ', () => {
     expect(loadSave(memoryStorage())).toEqual(defaultSave());
   });

@@ -1,8 +1,9 @@
 // 進行データの保存（localStorage）、JSONでのバックアップ書き出し・読み込み、リセット。
 // 記録（ジャンル別の正答率・ミスの型ごとの回数・直近の回答）もここで持つ。
 
-import { CONFIG, HOLD_COLORS } from '../config';
+import { CONFIG, HOLD_COLORS, type HoldColor } from '../config';
 import type { Difficulty, Genre, MistakeType } from '../core/types';
+import type { SpinResult } from '../game/lottery';
 import { newGameState, type GameState } from '../game/state';
 import { GENRES, type GenreChoice, type MistakeCounts } from '../questions/index';
 import { MISTAKE_TYPES } from '../questions/mistakes';
@@ -72,6 +73,25 @@ const num = (x: unknown, fallback: number) =>
   typeof x === 'number' && Number.isFinite(x) && x >= 0 ? x : fallback;
 const bool = (x: unknown, fallback: boolean) => (typeof x === 'boolean' ? x : fallback);
 
+/** 演出中だった抽選結果を点検する（おかしければ捨てる） */
+function normalizePending(p: unknown): SpinResult | null {
+  if (!isObj(p) || typeof p.hit !== 'boolean' || !isObj(p.hold)) return null;
+  const mode = p.hold.mode === 'kakuhen' ? 'kakuhen' : 'normal';
+  const color = HOLD_COLORS.includes(p.hold.color as never) ? (p.hold.color as HoldColor) : 'white';
+  const reels = Array.isArray(p.reels) && p.reels.length === 3 && p.reels.every((x) => Number.isInteger(x) && x >= 1 && x <= 9)
+    ? (p.reels as [number, number, number])
+    : ([1, 2, 3] as [number, number, number]);
+  const reach = p.reach === 'normal' || p.reach === 'super' ? p.reach : 'none';
+  return {
+    hit: p.hit,
+    kakuhen: p.hit && p.kakuhen === true,
+    reach,
+    reels,
+    payout: p.hit ? CONFIG.payout[mode] : 0,
+    hold: { color, mode },
+  };
+}
+
 function normalize(raw: Obj): SaveData {
   const d = defaultSave();
 
@@ -95,6 +115,7 @@ function normalize(raw: Obj): SaveData {
   for (const key of ['balls', 'spins', 'bigHits', 'kakuhenHits', 'chain', 'maxChain'] as const) {
     d.game[key] = num(g[key], 0);
   }
+  d.game.pending = normalizePending(g.pending);
 
   const st = isObj(raw.stats) ? raw.stats : {};
   const byGenre = isObj(st.byGenre) ? st.byGenre : {};

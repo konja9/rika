@@ -23,6 +23,11 @@ export interface GameState {
   chain: number;
   /** 最高連チャン数 */
   maxChain: number;
+  /**
+   * 抽選は済んだが、演出が終わっていない結果。
+   * 演出中にページを閉じても結果が消えたり引き直しになったりしないように保存しておく。
+   */
+  pending: SpinResult | null;
 }
 
 export function newGameState(): GameState {
@@ -36,6 +41,7 @@ export function newGameState(): GameState {
     kakuhenHits: 0,
     chain: 0,
     maxChain: 0,
+    pending: null,
   };
 }
 
@@ -87,16 +93,22 @@ export function recordAnswer(state: GameState, correct: boolean, color: HoldColo
   return { holdAdded, holdFull, kakuhenEnded };
 }
 
-/** 先頭の保留を取り出して抽選する（保留がなければ null） */
+/**
+ * 先頭の保留を取り出して抽選する（保留がなければ null）。
+ * 結果は pending に入り、演出が終わったら applySpin で反映する。
+ */
 export function takeSpin(state: GameState, rng: Rng): SpinResult | null {
   const hold = state.holds.shift();
   if (!hold) return null;
   state.spins += 1;
-  return drawSpin(hold, rng);
+  const result = drawSpin(hold, rng);
+  state.pending = result;
+  return result;
 }
 
 /** 抽選結果（演出が終わった後）を反映する */
 export function applySpin(state: GameState, result: SpinResult): void {
+  state.pending = null;
   if (!result.hit) return;
   state.balls += result.payout;
   state.bigHits += 1;
@@ -111,4 +123,11 @@ export function applySpin(state: GameState, result: SpinResult): void {
     state.mode = 'normal';
     state.kakuhenLeft = 0;
   }
+}
+
+/** 演出の途中で終わっていた抽選結果があれば反映する（起動時に使う） */
+export function settlePending(state: GameState): SpinResult | null {
+  const p = state.pending;
+  if (p) applySpin(state, p);
+  return p;
 }

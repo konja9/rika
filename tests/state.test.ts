@@ -4,7 +4,7 @@ import { CONFIG } from '../src/config';
 import { createRng } from '../src/core/random';
 import type { SpinResult } from '../src/game/lottery';
 import {
-  applySpin, currentDifficulty, isNumericMode, newGameState, recordAnswer, takeSpin,
+  applySpin, currentDifficulty, isNumericMode, newGameState, recordAnswer, settlePending, takeSpin,
 } from '../src/game/state';
 
 function fakeHit(kakuhen: boolean, holdMode: 'normal' | 'kakuhen'): SpinResult {
@@ -107,5 +107,25 @@ describe('出玉・連チャン', () => {
     applySpin(s, r);
     expect(s.balls).toBe(before.balls);
     expect(s.mode).toBe(before.mode);
+  });
+});
+
+describe('演出中の結果の保存', () => {
+  it('抽選した結果は pending に残り、反映すると消える', () => {
+    const s = newGameState();
+    recordAnswer(s, true, 'gold');
+    const r = takeSpin(s, createRng(5))!;
+    expect(s.pending).toEqual(r);
+    applySpin(s, r);
+    expect(s.pending).toBeNull();
+  });
+
+  it('起動時に演出途中の当たりがあれば反映する', () => {
+    const s = newGameState();
+    s.pending = fakeHit(true, 'normal');
+    expect(settlePending(s)).not.toBeNull();
+    expect(s.balls).toBe(CONFIG.payout.normal);
+    expect(s.mode).toBe('kakuhen');
+    expect(s.pending).toBeNull();
   });
 });
